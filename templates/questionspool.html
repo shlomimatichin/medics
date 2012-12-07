@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<title>מאגר שאלות - קורס חובשים - מד"א</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<link href="static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="static/css/smoothness/jquery-ui-1.8.23.custom.css" />
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<script src="static/js/jquery-1.8.2.min.js"></script>
+	<script src="static/js/jquery-ui-1.8.23.custom.min.js"></script>
+	<script src="static/js/jquery.cookie.js"></script>
+	<script src="static/js/jQueryRotateCompressed.2.2.js"></script>
+	<script src="static/js/_trace.min.js"></script>
+	<script src="static/js/debug.js"></script>
+	<script type="text/javascript" src="static/js/quiz.js"></script>
+	<script type="text/javascript">
+<!--
+	function listToHtml( list )
+	{
+		var result = "";
+		for ( var i in list )
+			result += "<li>" + list[ i ] + "</li>";
+		return result;
+	}
+
+	function chapterToHebrew( chapter )
+	{
+		switch ( chapter ) {
+			case 'cpr': return 'החייאה';
+			case 'patient': return 'חולה';
+			case 'nerves': return 'עצבים';
+			case 'cardio': return 'הלב';
+			case 'breath': return 'נשימה';
+			default:
+				alert( "Error: '" + chapter + "' is not a known chapter" );
+		}
+	}
+
+	var questionNumber = 0;
+	function addQuestionToTable( chapter, type, question, answer )
+	{
+		questionNumber += 1;
+		$("#questionstable").append( '<tr><td>' + questionNumber + '</td><td>' + 
+							chapterToHebrew( chapter ) + '</td><td>' +
+							type + '</td><td>' +
+							question + '</td><td>' +
+							answer + '</td></tr>\n' );
+	}
+
+	$(function(){
+		for ( var i in questionsPool ) {
+			var question = questionsPool[ i ];
+			switch ( question.type ) {
+				case 'abrv':
+					addQuestionToTable( question.chapter, "קיצור אותיות", question.abrv, question.heb + ' ' + question.desc );
+					break;
+				case 'engTerm':
+					addQuestionToTable( question.chapter, "מונח באנגליות", question.term, question.desc );
+					break;
+				case 'hebTerm':
+					addQuestionToTable( question.chapter, "מונח בעברית", question.term, question.desc );
+					break;
+				case 'simpleQuestion':
+					addQuestionToTable( question.chapter, "שאלה פשוטה", question.question, question.answer );
+					break;
+				case 'numberExact':
+					addQuestionToTable( question.chapter, "מספר", question.question, question.answer );
+					break;
+				case 'numberRange':
+					addQuestionToTable( question.chapter, "טווח מספרים", question.question, question.answermax + " - " + question.answermin );
+					break;
+				case 'trueorfalse':
+					if ( question.true ) {
+						addQuestionToTable( question.chapter, "אמת או שקר", question.question, "אמת" );
+					} else {
+						addQuestionToTable( question.chapter, "אמת או שקר", question.question, "שקר" );
+					}
+					break;
+				case 'list':
+					addQuestionToTable( question.chapter, "רשימת פרטים", question.question, listToHtml( question.list ) );
+					break;
+				case 'condition':
+					addQuestionToTable( question.chapter, "מחלה", question.condition, "הגדרה:" + question.definition +
+														"<br/>סימנים:" + listToHtml( question.signs ) +
+														"טיפול:" + listToHtml( question.treatment ) );
+					break;
+				case 'whatdoeshehave':
+					addQuestionToTable( question.chapter, "מה יש לו?", listToHtml( question.signs ), "מחלה:" + question.condition +
+														"</br>טיפול:" + listToHtml( question.treatment ) );
+					break;
+				default:
+					alert( "Uknown question type '" + question.type + "'" );
+			}
+		}
+	});
+-->
+	</script>
+	<style>
+		td {
+			padding-top: 3px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border: 1px solid #aaa;
+		}
+		thead {
+			font-size:150%;
+		}
+	</style>
+</head>
+
+<body dir="rtl">
+	<H1>מאגר השאלות</H1>
+
+	<table id="questionstable">
+		<thead>
+			<td></td>
+			<td>פרק</td>
+			<td>סוג שאלה</td>
+			<td>שאלה</td>
+			<td>תשובה</td>
+		</thead>
+	</table>
+
+	<footer style="padding-top:30px;">
+		<p>&copy; Shlomo Matichin, Tomer Fein 2012</p>
+		<p>מצאת טעות? רוצה להוסיף? צור איתנו קשר!</p>
+	</footer>
+
+	<script src="static/bootstrap/js/bootstrap.js"></script>
+</body>
+</html>

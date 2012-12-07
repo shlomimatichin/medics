@@ -1,13 +1,24 @@
-all: build/static/images/anamnesistree.png build/index.html build/phtls.html build/meshanenet.html build/anamnesis.html build/documents.html build/instructor.html
+all:	build \
+	build/static/images/anamnesistree.png \
+	build/index.html \
+	build/phtls.html \
+	build/meshanenet.html \
+	build/anamnesis.html \
+	build/documents.html \
+	build/instructor.html \
+	build/questionspool.html
 
 everything: clean copystaticfiles all
 
 clean:
 	- rm -fr build
 
-build/static/images/anamnesistree.png: dot/anamnesis.dot
+build/static/images/anamnesistree.png: static/dot/anamnesis.dot
 	- mkdir build
 	dot -Tpng -o $@ $<
+
+build:
+	make copystaticfiles
 
 copystaticfiles:
 	- mkdir build
