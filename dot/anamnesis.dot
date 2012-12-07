@@ -1,0 +1,60 @@
+digraph g {
+	"hello" -> "pqrst" [ label="כואב לי בחזה" ];
+	"hello" -> "cant breathe" [ label="קשה לי לנשום" ];
+	"hello" -> "not conscious" [ label="מעורפל הכרה" ];
+
+	"not conscious" -> "hypoglicemia" [ label="סוכר מתחת ל60" ];
+	"not conscious" -> "overdose" [ label="אישוני סיכה" ];
+	"not conscious" -> "cva" [ label="אישונים לא שווים\nאו סטיית מבט" ];
+	"not conscious" -> "seizure signs" [ label="תקין" ];
+
+	"seizure signs" -> "seizures" [ label="מזיע, עייף,\nסימני נשיכה על הלשון,\nחבלות (בראש),\nקצף בפה" ];
+	"seizure signs" -> "alcohol signs" [ label="לא" ];
+
+	"alcohol signs" -> "drunk" [ label="מריח מלאכוהול\nסיפור המקרה, עוברי אורח" ];
+
+	"cant breathe" -> "pulmunary edema" [ label="חרחורים" ];
+	"cant breathe" -> "squeaking" [ label="צפצופים" ];
+	"cant breathe" -> "cant breathe, no sounds" [ label="אין קולות חריגים" ];
+	"cant breathe" -> "asphixation" [ label="תלונה על חנק\nגוף זר בקנה\nשיעול חלש" ];
+
+	"squeaking" -> "COPD" [ label="כן" ];
+	"squeaking" -> "astma" [ label="לא" ];
+
+	"cant breathe, no sounds" -> "pneumonia" [ label="חם ולח\nשיעול דם" ];
+	"cant breathe, no sounds" -> "hyperventilation" [ label="נשימה מהירה\nאירוע רגשי חריג\n" ];
+	"cant breathe, no sounds" -> "pulmunary embolism" [ label="פתאומי, שיעול, כאב בחזה,\nטאכיקרדיה וטכיפניאה" ];
+	"cant breathe, no sounds" -> "aniphilaxis" [ label="פריחות, התנפחות בפנים או בגפיים\nחשיפה לרגישות, אולי ממזון" ];
+
+	"pqrst" -> "mi" [ label="כאב פתאומי בעוצמה גבוהה לוחץ\nמפושט בחזה, אינו משתנה בתזוזה\nהקרנות\nגורמי סיכון" ];
+	"pqrst" -> "muscoskeletal" [ label="כאב נקודתי, דוקר, משתנה בתנועה\nבדר\"כ חלש יותר" ];
+	"pqrst" -> "gastrointensinal" [ label="כאב בלחיצה בבטן\nאוכל שומני עם חריף\nאולכוס" ];
+
+	"hello" [ label="שלום, אני X ממגן דוד.\nמה קרה?" ];
+	"cant breathe" [ label="הזמנת נט\"ן\nסיפוק חמצן\nהושבה\nקולות נשימה חריגים?" ];
+	"not conscious" [ label="פתיחת נתיב אוויר\nמדידת סוכר\nבדיקת אישונים" ]; 
+	"squeaking" [ label="\"מטופל בחמצן בבית?\"\nBlue bloater?\nPink puffer?" ];
+	"cant breathe, no sounds" [ label="לקחת מדדים" ];
+	"seizure signs" [ label="סימני פרכוס?" ];
+	"alcohol signs" [ label="סימני שתייה?" ];
+	"pqrst" [ label="PQRST" ];
+
+	"hypoglicemia" [ shape=record label="{היפוגליקמיה|הזמנת נט\"ן\nמתן גלוקוג'ל\nמדידה חוזרת\nאוכל אם מתעורר\nלקדם פינוי\nפתיחת וריד}" ];
+	"cva" [ shape=record label="{CVA|הספקת חמצן\nלטוס לבי\"ח יעודי\nהזמנת טיפול טרומבוליטי|בדיקת לב\"ן}" ];
+	"overdose" [ shape=record label="{מנת יתר|פינוי לבי\"ח}" ];
+	"pulmunary edema" [ shape=record label="{בצקת ריאות|נט\"ן כבר הוזמן|\"היו מים בריאות?\"}" ];
+	"astma" [ shape=record label="{אסטמה|נט\"ן כבר הוזמן\nלהציע להשתמש במשאף}" ];
+	"COPD" [ shape=record label="{COPD|הפסקת עישון\nהרחקה מזיהום אוויר|Blue Bloater\nPink Puffer}" ];
+	"pneumonia" [ shape=record label="{דלקת ריאות|קירור במידת הצורך}" ];
+	"pulmunary embolism" [ shape=record label="{תסחיף ריאתי||לאחר ניתוח או לידה\nשכיבה ממושכת\nשבר במפרק הירך\nסרטן\nגלולות + עישון}" ];
+	"hyperventilation" [ shape=record label="{היפרונטילציה|לא לספק חמצן\nהרגעה\nהדרכת נשימה\nביטול נט\"ן}" ];
+
+	"aniphilaxis" [ shape=record label="{אניפילקסיס|\"יש לך כדור נגד אלרגיה?\"|רגישויות ידועות?\nאלרגיות נוספות?}" ];
+	"seizures" [ shape=record label="{פרכוסים|נט\"ן\nלספק חמצן\nכרית מתחת לראש\nלא לגעת בפרכוס|פרכוסי חום - בילדים בעליית חום מהירה\nסימני תזוזה בגפיים}" ];
+	"drunk" [ shape=record label="{שכרות|ניטור נשימה\nסיוע נשימתי בעת הצורך\nכיסוי|לוודא סיפור המקרה - לבטל נט\"ן רק בוודאות}" ];
+	"asphixation" [ shape=record label="{השתנקות|לחיצות ברום הבטן\nאו דחיקות חזה\nלא להכניס ידיים\nלעודד שיעול}" ];
+	"mi" [ shape=record label="{אוטם בשריר הלב|נט\"ן\nחמצן\n300mg אספירין בלעיסה\n(פרוטוקול אספירין!, לבדוק רגישות)|לחץ דם ודופק לא מאבחנים\nחיוור מזיע וקר}" ];
+	"muscoskeletal" [ shape=record label="{כאב ממקור שריר-עצם}" ];
+	"gastrointensinal" [ shape=record label="{כאב ממערכת העיכול}" ];
+
+}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block contents %}
+	<div class="hero-unit">
+		<div class="pull-right">
+			<h1>אמצעי הדרכה לקורס חובשים</h1>
+			<p>מספר אמצעי הדרכה לקורס חובשים של מגן דוד אדום</p>
+		</div>
+		<div class="pull-left">
+			<img src="static/images/bigstar.jpg"/ width=200>
+		</div>
+		<div style="clear: both">
+		</div>
+	</div>
+
+	<div class="fluid-row">
+		<div class="span4">
+			<h2>סימולטור PHTLS</h2>
+			<p>רוצה להתאמן על טיפול בטראומה?</p>
+			<p><a class="btn btn-danger" href="phtls.html">סימולטור PHTLS &raquo;</a></p>
+		</div>
+		<div class="span4">
+			<h2>סימולטור אנמנזה</h2>
+			<p>רוצה להתאמן על אבחנה של חולה?</p>
+			<p><a class="btn btn-danger" href="anamnesis.html">סימולטור אנמנזה &raquo;</a></p>
+		</div>
+		<div class="span4">
+			<h2>שינון</h2>
+			<p>מתקשה לזכור את כל הפרטים?</p>
+			<p>כרטסיות שינון לרשותך</p>
+			<p><a class="btn btn-danger" href="meshanenet.html">כרטסיות שינון  &raquo;</a></p>
+		</div>
+	</div>
+
+	<div class="fluid-row">
+		<div class="span4">
+		</div>
+		<div class="span4">
+			<h2>כלים למדריך</h2>
+			<p>מדריך: שוקל האם להפנות חניכים לכאן,אבל מעוניין לעבור על כל החומר לפני?</p>
+			<p><a class="btn btn-danger" href="instructor.html">כלים למדריך &raquo;</a></p>
+		</div>
+		<div class="span4">
+			<h2>עיין בחומרי עזר</h2>
+			<p>חומרי עזר ללימוד למבחנים</p>
+			<p><a class="btn btn-danger" href="documents.html">חומרי עזר  &raquo;</a></p>
+		</div>
+	</div>
+
+	<style>
+		.span4 { height:200px; }
+	</style>
+{% endblock %}
