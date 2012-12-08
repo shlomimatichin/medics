@@ -2,644 +2,262 @@
 
 {% block contents %}
 
+<script type="text/javascript" src="static/js/anamnesis.js">
 <script type="text/javascript">
 <!--
+	function formatString() {
+	  var s = arguments[0];
+	  for (var i = 0; i < arguments.length - 1; i++) {       
+	    var reg = new RegExp("\\{" + i + "\\}", "gm");             
+	    s = s.replace(reg, arguments[i + 1]);
+	  }
 
-function formatString() {
-  var s = arguments[0];
-  for (var i = 0; i < arguments.length - 1; i++) {       
-    var reg = new RegExp("\\{" + i + "\\}", "gm");             
-    s = s.replace(reg, arguments[i + 1]);
-  }
+	  return s;
+	};
 
-  return s;
-};
+	function chapterEnabled( chapter, obj )
+	{
+		if ( $("#chapter_" + chapter).size() == 0 )
+			alert( "Error: " + chapter + " is not a known chapter (" + $.listProperties( obj ) + ")" );
+		return $("#chapter_" + chapter).attr("checked")=="checked";
+	}
 
-		function chapterEnabled( chapter, obj )
-		{
-			if ( $("#chapter_" + chapter).size() == 0 )
-				alert( "Error: " + chapter + " is not a known chapter (" + $.listProperties( obj ) + ")" );
-			return $("#chapter_" + chapter).attr("checked")=="checked";
+	function difficultyEnabled( difficulty, obj )
+	{
+		if ( $("#difficulty_" + difficulty).size() == 0 )
+			alert( "Error: " + difficulty + " is not a known difficulty (" + $.listProperties( obj ) + ")" );
+		return $("#difficulty_" + difficulty).attr("checked")=="checked";
+	}
+
+	function listToHtml( list )
+	{
+		var result = "";
+		for ( var i in list )
+			result += "<li>" + list[ i ] + "</li>";
+		return result;
+	}
+
+	var relevantCases = [];
+	var lastCaseIndexInRelevantCases = 0;
+	function refillRelevantCases() {
+		relevantCases = [];
+		lastCaseIndexInRelevantCases = -1;
+		for ( var i in cases ) {
+			var aCase = cases[ i ];
+			if ( ! chapterEnabled( aCase.chapter, aCase ) )
+				continue;
+			if ( ! difficultyEnabled( aCase.difficulty, aCase ) )
+				continue;
+			relevantCases.push( aCase );
 		}
+		$("#startbutton").show();
+		$("#finishbutton").hide();
+		$("#playground").hide();
+	}
 
-		function difficultyEnabled( difficulty, obj )
-		{
-			if ( $("#difficulty_" + difficulty).size() == 0 )
-				alert( "Error: " + difficulty + " is not a known difficulty (" + $.listProperties( obj ) + ")" );
-			return $("#difficulty_" + difficulty).attr("checked")=="checked";
-		}
+	function mergeDirectionaries(obj1,obj2){
+		var obj3 = {};
+		for (var attrname in obj1) { obj3[attrname] = obj1[attrname]; }
+		for (var attrname in obj2) { obj3[attrname] = obj2[attrname]; }
+		return obj3;
+	}
 
-		function listToHtml( list )
-		{
-			var result = "";
-			for ( var i in list )
-				result += "<li>" + list[ i ] + "</li>";
-			return result;
-		}
+	function wasCommandGiven( key )
+	{
+		for ( var i in commandsUntilNow )
+			if ( commandsUntilNow[ i ] == key )
+				return true;
+		return false;
+	}
 
-		var relevantCases = [];
-		var lastCaseIndexInRelevantCases = 0;
-		function refillRelevantCases() {
-			relevantCases = [];
-			lastCaseIndexInRelevantCases = -1;
-			for ( var i in cases ) {
-				var aCase = cases[ i ];
-				if ( ! chapterEnabled( aCase.chapter, aCase ) )
-					continue;
-				if ( ! difficultyEnabled( aCase.difficulty, aCase ) )
-					continue;
-				relevantCases.push( aCase );
-			}
-			$("#startbutton").show();
-			$("#finishbutton").hide();
-			$("#playground").hide();
-		}
-
-		function mergeDirectionaries(obj1,obj2){
-			var obj3 = {};
-			for (var attrname in obj1) { obj3[attrname] = obj1[attrname]; }
-			for (var attrname in obj2) { obj3[attrname] = obj2[attrname]; }
-			return obj3;
-		}
-
-		function wasCommandGiven( key )
-		{
-			for ( var i in commandsUntilNow )
-				if ( commandsUntilNow[ i ] == key )
-					return true;
-			return false;
-		}
-
-		function finishCase()
-		{
-			$(".historyline").show();
-			stopCounter();
-			$("#command_input_alphabetic").hide();
-			$("#command_input_byschema").hide();
-			$("#command_input_byinteraction").hide();
-			$("#startbutton").show();
-			$("#finishbutton").hide();
-			$("#history").append( "<tr><td>המקרה הוא:</td><td>" + currentCase.condition + '</td><td class="feedback"></td></tr>' );
-			for ( var i in commands ) {
-				var command = commands[ i ];
-				var answer;
-				if ( currentCase.answers[ command.key ] )
-					answer = currentCase.answers[ command.key ];
-				else
-					answer = defaultAnswers[ command.key ];
-				if ( answer.feedback == FEEDBACK_MUST && ! wasCommandGiven( command.key ) )
-					$("#history").append( '<tr><td></td><td></td><td class="feedback feedback_bad">לא ביצעת: ' + command.command + '</td></tr>' );
-			}
-			for ( var i in commands ) {
-				var command = commands[ i ];
-				var answer;
-				if ( currentCase.answers[ command.key ] )
-					answer = currentCase.answers[ command.key ];
-				else
-					answer = defaultAnswers[ command.key ];
-				if ( answer.feedback == FEEDBACK_SHOULD_BE_ASKED && ! wasCommandGiven( command.key ) )
-					$("#history").append( '<tr><td></td><td></td><td class="feedback">כדאי ש: ' + command.command + '</td></tr>' );
-			}
-		}
-
-		function showCommandInputByMethod()
-		{
-			$("#command_input_alphabetic").hide();
-			$("#command_input_byinteraction").hide();
-			$("#command_input_byschema").hide();
-			if ( $("#input_alphabetic").attr("checked")=="checked" )
-				$("#command_input_alphabetic").show();
-			else if ( $("#input_byschema").attr("checked")=="checked" )
-				$("#command_input_byschema").show();
-			else if ( $("#input_byinteraction").attr("checked")=="checked" )
-				$("#command_input_byinteraction").show();
-		}
-
-		var streetNames = [ 'כצנלסון', 'זבוטינסקי', 'הרצל', 'ויצמן' ];
-
-		var currentSchemas;
-		var currentCase;
-		var commandsUntilNow;
-		function nextCase() {
-			$("#startbutton").hide();
-			$("#finishbutton").show();
-			showCommandInputByMethod();
-			$("#history").html("");
-			$("#playground").show("fade");
-			if ( $("#order_random").attr("checked")=="checked" )
-				lastCaseIndexInRelevantCases = Math.floor(Math.random()*relevantCases.length);
-			else
-				lastCaseIndexInRelevantCases = ( lastCaseIndexInRelevantCases + 1 ) % relevantCases.length;
-			currentCase = relevantCases[ lastCaseIndexInRelevantCases ];
-			currentSchemas = { 'patient': 0, 'anamnesis': 0 };
-			commandsUntilNow = [];
-			var randomAddressIndex = Math.floor( Math.random() * streetNames.length );
-			var randomNumber = Math.floor( Math.random() * 100 );
-			var address = " ברחוב " + streetNames[ randomAddressIndex ] + " " + randomNumber;
-			var age = currentCase.agemin + Math.round( Math.random() * ( currentCase.agemax - currentCase.agemin ) )
-			$("#history").append( '<tr class="historyline"><td>' + formatString( currentCase.intro, age, address ) + "</td><td>הגעת למקום</td></tr>" );
-			startCounter();
-		}
-
-		function findCommand( key )
-		{
-			for ( var i in commands )
-				if ( commands[ i ].key == key )
-					return commands[ i ];
-		}
-
-		function commandGiven( key )
-		{
+	function finishCase()
+	{
+		$(".historyline").show();
+		stopCounter();
+		$("#command_input_alphabetic").hide();
+		$("#command_input_byschema").hide();
+		$("#command_input_byinteraction").hide();
+		$("#startbutton").show();
+		$("#finishbutton").hide();
+		$("#history").append( "<tr><td>המקרה הוא:</td><td>" + currentCase.condition + '</td><td class="feedback"></td></tr>' );
+		for ( var i in commands ) {
+			var command = commands[ i ];
 			var answer;
-			var feedback = "";
-			if ( wasCommandGiven( key ) )
-				feedback += '<span class="feedback_bad">חזרת על עצמך</span><br/>';
+			if ( currentCase.answers[ command.key ] )
+				answer = currentCase.answers[ command.key ];
 			else
-				commandsUntilNow.push( key );
-			if ( currentCase.answers[ key ] )
-				answer = currentCase.answers[ key ];
+				answer = defaultAnswers[ command.key ];
+			if ( answer.feedback == FEEDBACK_MUST && ! wasCommandGiven( command.key ) )
+				$("#history").append( '<tr><td></td><td></td><td class="feedback feedback_bad">לא ביצעת: ' + command.command + '</td></tr>' );
+		}
+		for ( var i in commands ) {
+			var command = commands[ i ];
+			var answer;
+			if ( currentCase.answers[ command.key ] )
+				answer = currentCase.answers[ command.key ];
 			else
-				answer = defaultAnswers[ key ];
-			if ( answer.feedback == FEEDBACK_DOES_NOT_MATCH_CASE )
-				feedback += '<span class="feedback_bad">לא מתאים למקרה</span><br/>';
-			var command = findCommand( key );
-			if ( typeof( currentSchemas[ command.schema ] ) == 'number' ) {
-				if ( command.schemaorder < currentSchemas[ command.schema ] ) {
-					feedback += "הלכת אחורה בסכמת " + command.schema + "<br/>";
-				}
-				currentSchemas[ command.schema ] = command.schemaorder;
-			}
-			if ( $("#memory_hidehistory").attr("checked")=="checked" )
-				$(".historyline").hide();
-			$("#history").append( '<tr class="historyline"><td>' + command.command + "</td><td>" + answer.answer + '</td><td class="feedback">' + feedback + "</td></tr>" );
+				answer = defaultAnswers[ command.key ];
+			if ( answer.feedback == FEEDBACK_SHOULD_BE_ASKED && ! wasCommandGiven( command.key ) )
+				$("#history").append( '<tr><td></td><td></td><td class="feedback">כדאי ש: ' + command.command + '</td></tr>' );
 		}
+	}
 
-		var counterStarted;
-		function startCounter()
-		{
-			counterStarted = (new Date).getTime();
-			$(document).everyTime( 1000, function() {
-				var interval = (new Date).getTime() - counterStarted;
-				var seconds = "00000000" + Math.floor( interval / 1000 % 60 );
-				$("#counter").html( Math.floor( interval / 60000 ) + ":" + seconds.substr( seconds.length - 2 ) );
-			} );
-		}
-		function stopCounter()
-		{
-			$(document).stopTime();
-		}
+	function showCommandInputByMethod()
+	{
+		$("#command_input_alphabetic").hide();
+		$("#command_input_byinteraction").hide();
+		$("#command_input_byschema").hide();
+		if ( $("#input_alphabetic").attr("checked")=="checked" )
+			$("#command_input_alphabetic").show();
+		else if ( $("#input_byschema").attr("checked")=="checked" )
+			$("#command_input_byschema").show();
+		else if ( $("#input_byinteraction").attr("checked")=="checked" )
+			$("#command_input_byinteraction").show();
+	}
 
-		function sortCommands( commandsToSort )
-		{
-			var sortedCommands = [];
-			for (var i in commands)
-				sortedCommands.push( commands[ i ] );
-			sortedCommands.sort( function( a, b ) { return (b.command<a.command)-(a.command<b.command) } );
-			return sortedCommands;
-		}
+	var currentSchemas;
+	var currentCase;
+	var commandsUntilNow;
+	function nextCase() {
+		$("#startbutton").hide();
+		$("#finishbutton").show();
+		showCommandInputByMethod();
+		$("#history").html("");
+		$("#playground").show("fade");
+		if ( $("#order_random").attr("checked")=="checked" )
+			lastCaseIndexInRelevantCases = Math.floor(Math.random()*relevantCases.length);
+		else
+			lastCaseIndexInRelevantCases = ( lastCaseIndexInRelevantCases + 1 ) % relevantCases.length;
+		currentCase = relevantCases[ lastCaseIndexInRelevantCases ];
+		currentSchemas = { 'patient': 0, 'anamnesis': 0 };
+		commandsUntilNow = [];
+		var randomAddressIndex = Math.floor( Math.random() * streetNames.length );
+		var randomNumber = Math.floor( Math.random() * 100 );
+		var address = " ברחוב " + streetNames[ randomAddressIndex ] + " " + randomNumber;
+		var age = currentCase.agemin + Math.round( Math.random() * ( currentCase.agemax - currentCase.agemin ) )
+		$("#history").append( '<tr class="historyline"><td>' + formatString( currentCase.intro, age, address ) + "</td><td>הגעת למקום</td></tr>" );
+		startCounter();
+	}
 
-		function fillCommands()
-		{
-			var sortedCommands = sortCommands( commands );
-			for (var i in sortedCommands ) {
-				var command = sortedCommands[ i ];
-				$("#command_alphabetic_combobox").append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
+	function findCommand( key )
+	{
+		for ( var i in commands )
+			if ( commands[ i ].key == key )
+				return commands[ i ];
+	}
+
+	function commandGiven( key )
+	{
+		var answer;
+		var feedback = "";
+		if ( wasCommandGiven( key ) )
+			feedback += '<span class="feedback_bad">חזרת על עצמך</span><br/>';
+		else
+			commandsUntilNow.push( key );
+		if ( currentCase.answers[ key ] )
+			answer = currentCase.answers[ key ];
+		else
+			answer = defaultAnswers[ key ];
+		if ( answer.feedback == FEEDBACK_DOES_NOT_MATCH_CASE )
+			feedback += '<span class="feedback_bad">לא מתאים למקרה</span><br/>';
+		var command = findCommand( key );
+		if ( typeof( currentSchemas[ command.schema ] ) == 'number' ) {
+			if ( command.schemaorder < currentSchemas[ command.schema ] ) {
+				feedback += "הלכת אחורה בסכמת " + command.schema + "<br/>";
 			}
-			for (var schemaName in schemas ) {
-				var phases = schemas[ schemaName ];
-				for ( var i in phases ) {
-					var phaseName = phases[ i ];
-					var comboBoxId = "command_byschema_" + schemaName + "_" + i + "_combobox";
-					$("#command_input_byschema_phasecombobox").append( '<option value="' + comboBoxId + '">' + phaseName + '</option>\n' );
-					$("#command_input_byschema").append('<select class="command_combobox command_input_byschema_commandcombobox" id="' + comboBoxId + '"' + 
-								' style="display:none;"><option value="" class="emptycommand"></option></select>');
-					for ( var commandIndex in commands ) {
-						var command = commands[ commandIndex ];
-						if ( command.schema == schemaName && command.schemaorder == i )
-							$("#"+comboBoxId).append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
-					}
-				}
-			}
-			for ( var interactionIndex in interactions ) {
-				var interactionName = interactions[ interactionIndex ];
-				var comboBoxId = "command_byinteraction_" + interactionIndex + "_combobox";
-				$("#command_input_byinteraction_interactioncombobox").append( '<option value="' + comboBoxId + '">' + interactionName + '</option>\n' );
-				$("#command_input_byinteraction").append('<select class="command_combobox command_input_byinteraction_commandcombobox" id="' + comboBoxId + '"' +
-								' style="display:none;"><option value="" class="emptycommand"></option></select>');
+			currentSchemas[ command.schema ] = command.schemaorder;
+		}
+		if ( $("#memory_hidehistory").attr("checked")=="checked" )
+			$(".historyline").hide();
+		$("#history").append( '<tr class="historyline"><td>' + command.command + "</td><td>" + answer.answer + '</td><td class="feedback">' + feedback + "</td></tr>" );
+	}
+
+	var counterStarted;
+	function startCounter()
+	{
+		counterStarted = (new Date).getTime();
+		$(document).everyTime( 1000, function() {
+			var interval = (new Date).getTime() - counterStarted;
+			var seconds = "00000000" + Math.floor( interval / 1000 % 60 );
+			$("#counter").html( Math.floor( interval / 60000 ) + ":" + seconds.substr( seconds.length - 2 ) );
+		} );
+	}
+	function stopCounter()
+	{
+		$(document).stopTime();
+	}
+
+	function sortCommands( commandsToSort )
+	{
+		var sortedCommands = [];
+		for (var i in commands)
+			sortedCommands.push( commands[ i ] );
+		sortedCommands.sort( function( a, b ) { return (b.command<a.command)-(a.command<b.command) } );
+		return sortedCommands;
+	}
+
+	function fillCommands()
+	{
+		var sortedCommands = sortCommands( commands );
+		for (var i in sortedCommands ) {
+			var command = sortedCommands[ i ];
+			$("#command_alphabetic_combobox").append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
+		}
+		for (var schemaName in schemas ) {
+			var phases = schemas[ schemaName ];
+			for ( var i in phases ) {
+				var phaseName = phases[ i ];
+				var comboBoxId = "command_byschema_" + schemaName + "_" + i + "_combobox";
+				$("#command_input_byschema_phasecombobox").append( '<option value="' + comboBoxId + '">' + phaseName + '</option>\n' );
+				$("#command_input_byschema").append('<select class="command_combobox command_input_byschema_commandcombobox" id="' + comboBoxId + '"' + 
+							' style="display:none;"><option value="" class="emptycommand"></option></select>');
 				for ( var commandIndex in commands ) {
 					var command = commands[ commandIndex ];
-					if ( command.interaction == interactionIndex )
+					if ( command.schema == schemaName && command.schemaorder == i )
 						$("#"+comboBoxId).append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
 				}
 			}
 		}
-
-		function tableToHtml( table )
-		{
-			var html = '<table class="report">\n';
-			for ( var i in table ) {
-					html += "<tr>\n";
-					for ( var j in table[ i ] )
-						html += "<td>" + table[ i ][ j ] + "</td>\n";
-					html += "</tr>\n"
-			}
-			html += "</table>\n"
-			return html;
-		}
-
-		function reportAllCases()
-		{
-			$("body").html("");
-
-			for (var i in relevantCases) {
-					var aCase = relevantCases[ i ];
-					var table = [];
-					table.push( [ 'המקרה', '', '', '', aCase.condition ] );
-					table.push( [ 'מידע מהמוקד', '', '', '', aCase.intro ] );
-					table.push( [ 'טווח גילאים', '', '', '',  aCase.agemin + " - " + aCase.agemax ] );
-					table.push( [ 'פרק', '', '', '', aCase.chapter ] );
-					table.push( [ 'קושי', '', '', '', aCase.difficulty ] );
-					for ( var j in commands ) {
-						var command = commands[ j ];
-						var key = command.key;
-						var feedback = "";
-						var answer;
-						if ( aCase.answers[ key ] )
-							answer = aCase.answers[ key ];
-						else
-							answer = defaultAnswers[ key ];
-						var must = false;
-						for ( var k in aCase.must )
-							if ( aCase.must[ k ] == key )
-								must = true;
-						if ( must )
-							feedback += "חובה לבצע<br/>";
-						var schema = '';
-						var phase = '';
-						if ( command.schema ) {
-							schema = command.schema;
-							phase = schemas[ command.schema ][ command.schemaorder ];
-						}
-						table.push( [ key, schema, phase, interactions[ command.interaction ], command.command, answer.answer, answer.feedback ] )
-					}
-					$("body").append( tableToHtml( table ) );
-					$("body").append( '<div class="reportseperator"></div>\n' );
+		for ( var interactionIndex in interactions ) {
+			var interactionName = interactions[ interactionIndex ];
+			var comboBoxId = "command_byinteraction_" + interactionIndex + "_combobox";
+			$("#command_input_byinteraction_interactioncombobox").append( '<option value="' + comboBoxId + '">' + interactionName + '</option>\n' );
+			$("#command_input_byinteraction").append('<select class="command_combobox command_input_byinteraction_commandcombobox" id="' + comboBoxId + '"' +
+							' style="display:none;"><option value="" class="emptycommand"></option></select>');
+			for ( var commandIndex in commands ) {
+				var command = commands[ commandIndex ];
+				if ( command.interaction == interactionIndex )
+					$("#"+comboBoxId).append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
 			}
 		}
+	}
 
-		$(function(){
-			refillRelevantCases();
-			fillCommands();
-			$("#startbutton").click( nextCase );
-			$("#finishbutton").click( finishCase );
-			$(".command_combobox").change( function() {
-				var key = $(this).val();
-				$(".emptycommand").attr( "selected", "selected" );
-				$(".command_input_byschema_commandcombobox").hide();
-				$(".command_input_byinteraction_commandcombobox").hide();
-				commandGiven( parseInt( key ) );
-			} );
-			$("#report").click( reportAllCases );
-			$(".inputradio").change( showCommandInputByMethod );
-			$("#command_input_byschema_phasecombobox").change( function() {
-				var key = $(this).val();
-				$(".command_input_byschema_commandcombobox").hide();
-				if ( key != "" )
-					$("#"+key).show();
-			} );
-			$("#command_input_byinteraction_interactioncombobox").change( function() {
-				var key = $(this).val();
-				$(".command_input_byinteraction_commandcombobox").hide();
-				if ( key != "" )
-					$("#"+key).show();
-			} );
-		});
-
-		var FEEDBACK_DOES_NOT_MATCH_CASE = "should not be asked";
-		var FEEDBACK_NONE = "";
-		var FEEDBACK_SHOULD_BE_ASKED = "should be asked";
-		var FEEDBACK_MUST = "must";
-		var cases = [
-			{
-				'intro': 'ירקון 77, בן {0} עם מצוקה נשימתית, {1}',
-				'agemin': 5,
-				'agemax': 100,
-				'chapter': 'breath',
-				'difficulty': 'classic',
-				'condition': 'אסטמה',
-				'answers': {
-					1001: { 'answer': '"קשה לי לנשום."', 'feedback': FEEDBACK_MUST },
-					2000: { 'answer': 'החולה יושב, רוכן קדימה, נשען על הידיים', 'feedback': FEEDBACK_MUST },
-					2001: { 'answer': 'לא', 'feedback': FEEDBACK_MUST },
-					2002: { 'answer': 'מצפצף', 'feedback': FEEDBACK_MUST },
-					2004: { 'answer': '10', 'feedback': FEEDBACK_MUST },
-					3001: { 'answer': '110', 'feedback': FEEDBACK_MUST },
-					4009: { 'answer': 'לא', 'feedback': FEEDBACK_SHOULD_BE_ASKED },
-					10001: { 'answer': '"ניקיתי אבק בבית"', 'feedback': FEEDBACK_MUST },
-					10203: { 'answer': '"לא"', 'feedback': FEEDBACK_SHOULD_BE_ASKED },
-					10401: { 'answer': '"כחצי שעה"', 'feedback': FEEDBACK_MUST },
-					10701: { 'answer': '"משאף ונטולין"', 'feedback': FEEDBACK_MUST },
-					10702: { 'answer': '"כן"', 'feedback': FEEDBACK_MUST },
-					10801: { 'answer': '"אסטמה"', 'feedback': FEEDBACK_MUST },
-					10802: { 'answer': '"אסטמה"', 'feedback': FEEDBACK_MUST },
-					100002: { 'answer': 'נכון', 'feedback': FEEDBACK_MUST },
-					100004: { 'answer': 'נכון', 'feedback': FEEDBACK_MUST },
-				},
-			},
-/*			{
-				'intro': 'ירקון 77, בן {0} עם מצוקה נשימתית, {1}',
-				'agemin': 65,
-				'agemax': 90,
-				'chapter': 'breath',
-				'difficulty': 'classic',
-				'condition': 'דלקת ריאות',
-				'answers': {
-					1001: '"קשה לי לנשום."',
-					2000: 'החולה שוכב',
-					2001: 'לא',
-					2002: 'מצפצף',
-					2004: '24',
-					3001: '120',
-					3002: 'חיוור',
-					3003: 'לח',
-					3005: '100/70',
-					3006: 'חם',
-					10001: '"כלום"',
-					10401: '"זה נבנה בהדרגה במשך 4 ימים"',
-					10701: '"מיקרופירין"',
-					10702: '"כן"',
-					10802: 'לא',
-					100001: 'נכון',
-					100002: 'נכון',
-					100011: 'נכון',
-				},
-				'must': [
-					1,2,
-					100001, 100002, 100011,
-
-					1000,1001,1002,
-					2000,2001,2002,2004,
-					3001,3002,3003,3005,3006,
-					10001, 10401,
-					10601, 10701, 10702, 10801, 10802, 10803, 10901, 11001,
-				]
-			},
-			{
-				'intro': 'ירקון 77, בן {0} עם מצוקה נשימתית, {1}',
-				'agemin': 70,
-				'agemax': 90,
-				'chapter': 'breath',
-				'difficulty': 'classic',
-				'condition': 'COPD',
-				'answers': {
-					1001: '"קשה לי לנשום."',
-					2000: 'החולה שוכב',
-					2001: 'לא',
-					2002: 'מצפצף',
-					2004: '24',
-					3001: '120',
-					3002: 'חיוור',
-					3003: 'לח',
-					3005: '100/70',
-					3006: 'חם',
-					10001: '"כלום"',
-					10401: '"זה נבנה בהדרגה במשך 4 ימים"',
-					10701: '"מיקרופירין"',
-					10702: '"כן"',
-					10802: 'לא',
-					100001: 'נכון',
-					100002: 'נכון',
-					100011: 'נכון',
-				},
-				'must': [
-					1,2,
-					100001, 100002, 100011,
-
-					1000,1001,1002,
-					2000,2001,2002,2004,
-					3001,3002,3003,3005,3006,
-					10001, 10401,
-					10601, 10701, 10702, 10801, 10802, 10803, 10901, 11001,
-				]
-			}
-*/		];
-
-		var defaultAnswers = {
-			1: { 'answer': 'אין', 'feedback': FEEDBACK_MUST },
-			2: { 'answer': 'נראה מקצוען', 'feedback': FEEDBACK_MUST },
-
-			1000: { 'answer': '"שלום."', 'feedback': FEEDBACK_MUST },
-			1001: { 'answer': 'לא עונה', 'feedback': FEEDBACK_MUST },
-			1002: { 'answer': 'אין', 'feedback': FEEDBACK_MUST },
-
-			2000: { 'answer': 'החולה יושב', 'feedback': FEEDBACK_MUST },
-			2001: { 'answer': 'משלים משפטים כמו גדול', 'feedback': FEEDBACK_MUST },
-			2002: { 'answer': 'לא', 'feedback': FEEDBACK_MUST },
-			2003: { 'answer': 'לא', 'feedback': FEEDBACK_MUST },
-			2004: { 'answer': '16', 'feedback': FEEDBACK_MUST },
-
-			3001: { 'answer': 'תקין', 'feedback': FEEDBACK_MUST },
-			3002: { 'answer': 'צבע עור רגיל', 'feedback': FEEDBACK_MUST },
-			3003: { 'answer': 'לא', 'feedback': FEEDBACK_MUST },
-			3004: { 'answer': 'תקין', 'feedback': FEEDBACK_MUST },
-			3005: { 'answer': 'תקין', 'feedback': FEEDBACK_MUST },
-			3006: { 'answer': 'רגיל', 'feedback': FEEDBACK_MUST },
-
-			4001: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			4002: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			4003: { 'answer': '"כן"', 'feedback': FEEDBACK_NONE },
-			4004: { 'answer': '"כן"', 'feedback': FEEDBACK_NONE },
-			4005: { 'answer': 'חיוך תקין', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			4006: { 'answer': 'שווה', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			4007: { 'answer': 'שווה', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			4008: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			4009: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10001: undefined,
-			10002: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			10003: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10101: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10201: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			10202: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			10203: { 'answer': '"לא"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			10204: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10301: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10401: undefined,
-			10402: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			10403: { 'answer': '"לא כואב לי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10501: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			10502: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10601: { 'answer': '"אין"', 'feedback': FEEDBACK_MUST },
-			
-			10701: { 'answer': '"לא"', 'feedback': FEEDBACK_MUST },
-			10702: { 'answer': '"לא לוקח תרופות"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			
-			10801: { 'answer': '"כן"', 'feedback': FEEDBACK_MUST },
-			10802: { 'answer': '"לא"', 'feedback': FEEDBACK_MUST },
-			10803: { 'answer': '"לא"', 'feedback': FEEDBACK_MUST },
-			10804: { 'answer': '"לא התאשפזתי"', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-
-			10901: { 'answer': '"לפני כמה שעות"', 'feedback': FEEDBACK_MUST },
-
-			11001: { 'answer': '"בסדר"', 'feedback': FEEDBACK_MUST },
-
-			100000: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100001: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100002: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100004: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100005: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100006: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100007: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100008: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100009: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100010: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-			100011: { 'answer': '', 'feedback': FEEDBACK_DOES_NOT_MATCH_CASE },
-		};
-
-		var schemas = {
-			'patient': [
-				"Safety",
-				"Airway",
-				"Breath",
-				"Circulation",
-				"Disability",
-				"Treatment and Transport"
-			],
-			'anamnesis': [
-				"S&amp;S: Provokes",
-				"S&amp;S: Quality",
-				"S&amp;S: Region, Radiation, Risk Factors",
-				"S&amp;S: Severity",
-				"S&amp;S: Timing",
-				"S&amp;S: Associated Signs and Symptoms",
-				"Allergies",
-				"Medication",
-				"Pertinent Past Medical History",
-				"Last Oral Intake",
-				"Events leading to injury or illness"
-			]
-		};
-
-		var interactions = [
-			'שאל על הסביבה',
-			'פעל',
-			'פנה לאיש צוות',
-			'פנה לחולה',
-			'פנה לחולה לגבי כאב',
-			'התרשם',
-			'מדוד',
-			'פנה למלווה',
-		];
-
-		var commands = [
-			{ 'command': 'האם יש גורמים מסכנים?', 'key': 1, 'schema': 'patient', 'schemaorder': 0, 'interaction': 0 },
-			{ 'command': 'שם כפפות', 'key': 2, 'schema': 'patient', 'schemaorder': 0, 'interaction': 1 },
-
-			{ 'command': '"שלום אדוני, אני X ממגן דוד"', 'key': 1000, 'schema': 'patient', 'schemaorder': 1, 'interaction': 3 },
-			{ 'command': '"מה מפריע לך?"', 'key': 1001, 'schema': 'patient', 'schemaorder': 1, 'interaction': 3 },
-			{ 'command': 'יש איום על נתיב אוויר?', 'key': 1002, 'schema': 'patient', 'schemaorder': 1, 'interaction': 5 },
-
-			{ 'command': 'מהי תנוחת החולה?', 'key': 2000, 'schema': 'patient', 'schemaorder': 2, 'interaction': 5 },
-			{ 'command': 'האם החולה משלים משפטים?', 'key': 2001, 'schema': 'patient', 'schemaorder': 2, 'interaction': 5 },
-			{ 'command': 'האם החולה משמיע קולות נשימה חריגים?', 'key': 2002, 'schema': 'patient', 'schemaorder': 2, 'interaction': 5 },
-			{ 'command': 'האם החולה כחול בשפתיים?', 'key': 2003, 'schema': 'patient', 'schemaorder': 2, 'interaction': 5 },
-			{ 'command': 'הנחה איש צוות למדוד קצב נשימה', 'key': 2004, 'schema': 'patient', 'schemaorder': 2, 'interaction': 2 },
-
-			{ 'command': 'מה הדופק של החולה?', 'key': 3001, 'schema': 'patient', 'schemaorder': 3, 'interaction': 6 },
-			{ 'command': 'מה צבע העור של החולה?', 'key': 3002, 'schema': 'patient', 'schemaorder': 3, 'interaction': 5 },
-			{ 'command': 'האם מזיע?', 'key': 3003, 'schema': 'patient', 'schemaorder': 3, 'interaction': 5 },
-			{ 'command': 'מילוי קפילרי תקין?', 'key': 3004, 'schema': 'patient', 'schemaorder': 3, 'interaction': 6 },
-			{ 'command': 'הנחה איש צוות למדוד לחץ דם', 'key': 3005, 'schema': 'patient', 'schemaorder': 3, 'interaction': 2 },
-			{ 'command': 'התרשמות מטמפרטורת החולה', 'key': 3006, 'schema': 'patient', 'schemaorder': 3, 'interaction': 5 },
-
-			{ 'command': 'האם החולה הגיב לקול?', 'key': 4001, 'schema': 'patient', 'schemaorder': 4, 'interaction': 3 },
-			{ 'command': 'האם החולה הגיב לכאב?', 'key': 4002, 'schema': 'patient', 'schemaorder': 4, 'interaction': 1 },
-			{ 'command': 'האם האישונים סימטריים?', 'key': 4003, 'schema': 'patient', 'schemaorder': 4, 'interaction': 5 },
-			{ 'command': 'האם האישונים מגיבים לאור?', 'key': 4004, 'schema': 'patient', 'schemaorder': 4, 'interaction': 5 },
-			{ 'command': '"תחייך בשבילי"', 'key': 4005, 'schema': 'patient', 'schemaorder': 4, 'interaction': 3 },
-			{ 'command': '"תלחץ על הידיים שלי באופן שווה"', 'key': 4006, 'schema': 'patient', 'schemaorder': 4, 'interaction': 3 },
-			{ 'command': '"תרים בבקשה את שתי הידיים בגובה שווה מולך"', 'key': 4007, 'schema': 'patient', 'schemaorder': 4, 'interaction': 3 },
-			{ 'command': 'הנחה איש צוות לבדוק סוכר', 'key': 4008, 'schema': 'patient', 'schemaorder': 4, 'interaction': 2 },
-			{ 'command': 'האם לחולה יש תליון או צמיד רפואי?', 'key': 4009, 'schema': 'patient', 'schemaorder': 4, 'interaction': 0 },
-
-			{ 'command': '"מה קרה שזה התחיל?"', 'key': 10001, 'schema': 'anamnesis', 'schemaorder': 0, 'interaction': 3 },
-			{ 'command': '"תרכון קדימה. האם הכאב חזק או חלש יותר?"', 'key': 10002, 'schema': 'anamnesis', 'schemaorder': 0, 'interaction': 4 },
-			{ 'command': '"תריםק ידיים. האם הכאב חזק או חלש יותר?"', 'key': 10003, 'schema': 'anamnesis', 'schemaorder': 0, 'interaction': 4 },
-
-			{ 'command': '"הכאב שאתה מרגיש, האם הוא לוחץ, שורף או דוקר?"', 'key': 10101, 'schema': 'anamnesis', 'schemaorder': 1, 'interaction': 4 },
-
-			{ 'command': '"איפה כואב לך?"', 'key': 10201, 'schema': 'anamnesis', 'schemaorder': 2, 'interaction': 4 },
-			{ 'command': '"כואב לך בעוד מקומות?"', 'key': 10202, 'schema': 'anamnesis', 'schemaorder': 2, 'interaction': 4 },
-
-			{ 'command': '"מעשן?"', 'key': 10203, 'schema': 'anamnesis', 'schemaorder': 2, 'interaction': 3 },
-			{ 'command': '"סובל מסוכרת?"', 'key': 10204, 'schema': 'anamnesis', 'schemaorder': 2, 'interaction': 3 },
-
-			{ 'command': '"מ1 עד 10, כמה כואב לך?"', 'key': 10301, 'schema': 'anamnesis', 'schemaorder': 3, 'interaction': 4 },
-
-			{ 'command': '"כמה זמן הכאב/התלונה נמשך?"', 'key': 10401, 'schema': 'anamnesis', 'schemaorder': 4, 'interaction': 3 },
-			{ 'command': '"הכאב השתנה עם הזמן?"', 'key': 10402, 'schema': 'anamnesis', 'schemaorder': 4, 'interaction': 4 },
-			{ 'command': '"מתי הכאב הגיע לשיא?"', 'key': 10403, 'schema': 'anamnesis', 'schemaorder': 4, 'interaction': 4 },
-
-			{ 'command': '"הכאת?"', 'key': 10501, 'schema': 'anamnesis', 'schemaorder': 5, 'interaction': 3 },
-			{ 'command': '"אתה מרגיש בחילה?"', 'key': 10502, 'schema': 'anamnesis', 'schemaorder': 5, 'interaction': 3 },
-
-			{ 'command': '"אם יש לך אלרגיות?"', 'key': 10601, 'schema': 'anamnesis', 'schemaorder': 6, 'interaction': 3 },
-
-			{ 'command': '"נוטל תרופות על בסיס קבוע?"', 'key': 10701, 'schema': 'anamnesis', 'schemaorder': 7, 'interaction': 3 },
-			{ 'command': '"לקחת את התרופות שלך היום?"', 'key': 10702, 'schema': 'anamnesis', 'schemaorder': 7, 'interaction': 3 },
-
-			{ 'command': '"בריא בדרך כלל?"', 'key': 10801, 'schema': 'anamnesis', 'schemaorder': 8, 'interaction': 3 },
-			{ 'command': '"יש מחלות שאתה סובל מהן?"', 'key': 10802, 'schema': 'anamnesis', 'schemaorder': 8, 'interaction': 3 },
-			{ 'command': '"האם התאשפזת לארחונה?"', 'key': 10803, 'schema': 'anamnesis', 'schemaorder': 8, 'interaction': 3 },
-			{ 'command': '"אפשר לראות מכתב שחרור?"', 'key': 10804, 'schema': 'anamnesis', 'schemaorder': 8, 'interaction': 3 },
-
-			{ 'command': '"מתי אכלת לאחרונה?"', 'key': 10901, 'schema': 'anamnesis', 'schemaorder': 9, 'interaction': 3 },
-
-			{ 'command': '"איך הרגשת בימים האחרונים?"', 'key': 11001, 'schema': 'anamnesis', 'schemaorder': 10, 'interaction': 3 },
-
-/*
-			{ 'command': '"מה מצב ההכרה הבסיסי שלו?"', 'interaction': 7 },
-			{ 'command': '"אתה סובל מיתר לחץ דם?"', 'interaction': 3 },
-			{ 'command': '"אתה סובל מסכרת?"', },
-			{ 'command': '"אתה משען?"', },
-			{ 'command': '"היה במשפחה אירוע למישהו במשפחה?"', },
-			{ 'command': '"בדרך כלל מאוזן בסוכר?"', },
-			{ 'command': '"היו לך מים בריאות?"', },
-			{ 'command': '"עישנת סיגריה רגילה, או משהו אחר? אל תדאג, אני לא מהמשטרה."', },
-			{ 'command': '"האם אתה מרגיש נמלול בידיים או בשפתיים?"', },
-			{ 'command': '"האם אתה מטופל בחמצן בבית?"', },
-			{ 'command': '"האם אתה מרותק, או הולך, לאחרונה?"', },
-			{ 'command': '"האם נותחת לאחרונה?"', },
-			{ 'command': '"יש דימומים פעילים?"', },
-			{ 'command': '"האם יש לך אולקוס?"', },
-			{ 'command': '"האם יש לך טחורים?"', },
-			{ 'command': '"האם התאמצת היום יותר או פחות מהרגיל?"', },
-לראין את הסבתא
-האם שתה
-לפנות
-עודף משקך
-תזונה לקויה
-היסטוריה צנטור
-*/
-
-			{ 'command': 'להשכיב את החולה', 'key': 100000, 'interaction': 1 },
-			{ 'command': 'להושיב את החולה', 'key': 100001, 'schema': 'patient', 'schemaorder': 2, 'interaction': 1 },
-			{ 'command': 'הנחה איש צוות לספק חמצן', 'key': 100002, 'schema': 'patient', 'schemaorder': 2, 'interaction': 2 },
-			{ 'command': 'הזמנת נטן', 'key': 100004, 'interaction': 1 },
-			{ 'command': 'להרים את הרגליים של החולה', 'key': 100005, 'interaction': 1 },
-			{ 'command': 'להשים כרית מתחת לראש של החולה', 'key': 100006, 'interaction': 1 },
-			{ 'command': 'להניח מגברת רטובה על הבטן של החולה', 'key': 100007, 'interaction': 1 },
-			{ 'command': 'להחדיר מנתב אוויר', 'key': 100008, 'interaction': 1 },
-			{ 'command': 'פתיחת נתיב אוויר בשיטת מצח סנטר', 'key': 100009, 'interaction': 1 },
-			{ 'command': 'להודיע לבית החולים על המקרה', 'key': 100010, 'interaction': 1 },
-			{ 'command': 'פינוי דחוף לבית חולים', 'key': 100011, 'interaction': 1 },
-		];
+	$(function(){
+		refillRelevantCases();
+		fillCommands();
+		$("#startbutton").click( nextCase );
+		$("#finishbutton").click( finishCase );
+		$(".command_combobox").change( function() {
+			var key = $(this).val();
+			$(".emptycommand").attr( "selected", "selected" );
+			$(".command_input_byschema_commandcombobox").hide();
+			$(".command_input_byinteraction_commandcombobox").hide();
+			commandGiven( parseInt( key ) );
+		} );
+		$(".inputradio").change( showCommandInputByMethod );
+		$("#command_input_byschema_phasecombobox").change( function() {
+			var key = $(this).val();
+			$(".command_input_byschema_commandcombobox").hide();
+			if ( key != "" )
+				$("#"+key).show();
+		} );
+		$("#command_input_byinteraction_interactioncombobox").change( function() {
+			var key = $(this).val();
+			$(".command_input_byinteraction_commandcombobox").hide();
+			if ( key != "" )
+				$("#"+key).show();
+		} );
+	});
 -->
 </script>
 
@@ -657,12 +275,6 @@ function formatString() {
 	td {
 		padding-left: 10px;
 		padding-right: 10px;
-	}
-	.report {
-		border: 1px solid black;
-	}
-	.reportseperator {
-		height: 10px;
 	}
 	.inputtypedesc {
 		width: 200px;
@@ -731,6 +343,5 @@ function formatString() {
 			</select>
 		</div>
 	</div>
-	<a href="#" id="report">פרט את כל המקרים</a>
 </div>
 {% endblock %}

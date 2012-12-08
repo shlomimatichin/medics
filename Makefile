@@ -6,7 +6,8 @@ all:	build \
 	build/anamnesis.html \
 	build/documents.html \
 	build/instructor.html \
-	build/questionspool.html
+	build/questionspool.html \
+	build/anamnesispool.html
 
 everything: clean copystaticfiles all
 

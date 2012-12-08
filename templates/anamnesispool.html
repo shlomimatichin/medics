@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block headsupplement %}
+
+<style type="text/css">
+	td {
+		padding-left: 10px;
+		padding-right: 10px;
+		border: 1px solid #aaa;
+	}
+	.report {
+		border: 1px solid black;
+	}
+	.reportseperator {
+		margin: 10px;
+		height: 5px;
+		width: 90%;
+		background-color: black;
+	}
+</style>
+
+{% endblock %}
+
+{% block contents %}
+
+<script type="text/javascript" src="static/js/anamnesis.js"></script>
+<script type="text/javascript">
+<!--
+	function formatString() {
+	  var s = arguments[0];
+	  for (var i = 0; i < arguments.length - 1; i++) {       
+	    var reg = new RegExp("\\{" + i + "\\}", "gm");             
+	    s = s.replace(reg, arguments[i + 1]);
+	  }
+
+	  return s;
+	}
+
+	function listToHtml( list )
+	{
+		var result = "";
+		for ( var i in list )
+			result += "<li>" + list[ i ] + "</li>";
+		return result;
+	}
+
+	function tableToHtml( table )
+	{
+		var html = '<table class="report">\n';
+		for ( var i in table ) {
+				html += "<tr>\n";
+				for ( var j in table[ i ] )
+					html += "<td>" + table[ i ][ j ] + "</td>\n";
+				html += "</tr>\n"
+		}
+		html += "</table>\n"
+		return html;
+	}
+
+	function tableHTMLForCase( aCase )
+	{
+		var table = [];
+		table.push( [ 'המקרה', '', '', '', aCase.condition ] );
+		table.push( [ 'מידע מהמוקד', '', '', '', aCase.intro ] );
+		table.push( [ 'טווח גילאים', '', '', '',  aCase.agemin + " - " + aCase.agemax ] );
+		table.push( [ 'פרק', '', '', '', aCase.chapter ] );
+		table.push( [ 'קושי', '', '', '', aCase.difficulty ] );
+		for ( var j in commands ) {
+			var command = commands[ j ];
+			var key = command.key;
+			var feedback = "";
+			var answer;
+			if ( aCase.answers[ key ] )
+				answer = aCase.answers[ key ];
+			else
+				answer = defaultAnswers[ key ];
+			var must = false;
+			for ( var k in aCase.must )
+				if ( aCase.must[ k ] == key )
+					must = true;
+			if ( must )
+				feedback += "חובה לבצע<br/>";
+			var schema = '';
+			var phase = '';
+			if ( command.schema ) {
+				schema = command.schema;
+				phase = schemas[ command.schema ][ command.schemaorder ];
+			}
+			table.push( [ key, schema, phase, interactions[ command.interaction ], command.command, answer.answer, answer.feedback ] )
+		}
+		return tableToHtml( table );
+	}
+
+	function clearHTMLBody()
+	{
+		$("body").html( '<p><a class="btn btn-danger" href="anamnesispool.html">חזור &raquo;</a></p>' );
+	}
+
+	function reportAllCases()
+	{
+		clearHTMLBody();
+
+		for (var i in cases) {
+			var aCase = cases[ i ];
+			var html = tableHTMLForCase( aCase );
+			$("body").append( html );
+			$("body").append( '<div class="reportseperator"></div>\n' );
+		}
+	}
+
+	function reportDefaults()
+	{
+		$("body").html( '<p><a class="btn btn-danger" href="anamnesispool.html">חזור &raquo;</a></p>' );
+
+		var table = [];
+		for ( var j in commands ) {
+			var command = commands[ j ];
+			var key = command.key;
+			var feedback = "";
+			var answer = '';
+			if ( defaultAnswers[ key ] !== undefined )
+				answer = defaultAnswers[ key ].answer;
+			var must = false;
+			var schema = '';
+			var phase = '';
+			if ( command.schema ) {
+				schema = command.schema;
+				phase = schemas[ command.schema ][ command.schemaorder ];
+			}
+			table.push( [ key, schema, phase, interactions[ command.interaction ], command.command, answer ] )
+		}
+		$("body").append( tableToHtml( table ) );
+	}
+
+	$(function(){
+		$("#reportAllCases").click( reportAllCases );
+		$("#reportDefaults").click( reportDefaults );
+	});
+-->
+</script>
+
+<h1>מאגר מקרים עבור סימולטור אנמנזה</h1>
+
+<p> <a href="#" id="reportDefaults">פרט את כל הפעולות ותשובות ברירת המחדל (מוכן להדפסה)</a> </p>
+<p> <a href="#" id="reportAllCases">פרט את כל המקרים (מוכן להדפסה)</a> </p>
+
+</div>
+{% endblock %}
