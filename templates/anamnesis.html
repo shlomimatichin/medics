@@ -2,7 +2,8 @@
 
 {% block contents %}
 
-<script type="text/javascript" src="static/js/anamnesis.js">
+<script type="text/javascript" src="static/js/anamnesis.js"></script>
+<script type="text/javascript" src="static/js/mustache.js"></script>
 <script type="text/javascript">
 <!--
 	function formatString() {
@@ -14,6 +15,37 @@
 
 	  return s;
 	};
+
+	var bootstrapTabsTemplate = [	'{'+'{=[[ ]]=}'+'}',
+				'<div class="tabbable tabs-right">',
+				'	<ul class="nav nav-tabs">',
+				'		[[#tabs]]',
+				'			<li>',
+				'				<a href="#[[uniqueName]]_[[index]]" data-toggle="tab">[[&title]]</a>',
+				'			</li>',
+				'		[[/tabs]]',
+				'	</ul>',
+				'	<div class="tab-content">',
+				'		[[#tabs]]',
+				'			<div class="tab-pane [[klass]]" id="[[uniqueName]]_[[index]]">',
+				'				[[&html]]',
+				'			</div>',
+				'		[[/tabs]]',
+				'	</div>',
+				'</div>' ].join('\n');
+	var bootstrapDropdownButtonTemplate = [	'{'+'{=[[ ]]=}'+'}',
+						'<div class="btn-group" dir="rtl">',
+						'	<a class="btn btn-danger dropdown-toggle" data-toggle="dropdown" href="#">[[&title]] <span class="caret"></span> </a>',
+						'	<ul class="dropdown-menu" dir="[[dir]]" style="left: auto; right:0px">',
+						'		[[#items]]',
+						'			<li><a href="#" onclick="[[code]]">[[&title]]</a></li>',
+						'		[[/items]]',
+						'	</ul>',
+						'</div>' ].join('\n');
+	var commandTemplate = [	'{'+'{=[[ ]]=}'+'}',
+				'[[#commands]]',
+				'<p><a href="#" onclick="commandGiven([[key]])">[[command]]</a></p>',
+				'[[/commands]]' ].join('\n');
 
 	function chapterEnabled( chapter, obj )
 	{
@@ -175,6 +207,7 @@
 	var counterStarted;
 	function startCounter()
 	{
+		$("#counter").html( "0:00" );
 		counterStarted = (new Date).getTime();
 		$(document).everyTime( 1000, function() {
 			var interval = (new Date).getTime() - counterStarted;
@@ -203,33 +236,53 @@
 			var command = sortedCommands[ i ];
 			$("#command_alphabetic_combobox").append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
 		}
-		for (var schemaName in schemas ) {
-			var phases = schemas[ schemaName ];
-			for ( var i in phases ) {
-				var phaseName = phases[ i ];
-				var comboBoxId = "command_byschema_" + schemaName + "_" + i + "_combobox";
-				$("#command_input_byschema_phasecombobox").append( '<option value="' + comboBoxId + '">' + phaseName + '</option>\n' );
-				$("#command_input_byschema").append('<select class="command_combobox command_input_byschema_commandcombobox" id="' + comboBoxId + '"' + 
-							' style="display:none;"><option value="" class="emptycommand"></option></select>');
-				for ( var commandIndex in commands ) {
-					var command = commands[ commandIndex ];
-					if ( command.schema == schemaName && command.schemaorder == i )
-						$("#"+comboBoxId).append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
-				}
-			}
-		}
+		fillCommandsForInputByInteraction();
+		fillCommandsForInputBySchema();
+	}
+
+	function fillCommandsForInputByInteraction()
+	{
+		var interactionsTabs = [];
 		for ( var interactionIndex in interactions ) {
 			var interactionName = interactions[ interactionIndex ];
-			var comboBoxId = "command_byinteraction_" + interactionIndex + "_combobox";
-			$("#command_input_byinteraction_interactioncombobox").append( '<option value="' + comboBoxId + '">' + interactionName + '</option>\n' );
-			$("#command_input_byinteraction").append('<select class="command_combobox command_input_byinteraction_commandcombobox" id="' + comboBoxId + '"' +
-							' style="display:none;"><option value="" class="emptycommand"></option></select>');
+			var commandsInInteraction = [];
 			for ( var commandIndex in commands ) {
 				var command = commands[ commandIndex ];
-				if ( command.interaction == interactionIndex )
-					$("#"+comboBoxId).append( '<option value="' + command.key + '">' + command.command + '</option>\n' );
+				if ( command.interaction != interactionIndex )
+					continue;
+				commandsInInteraction.push( command );
 			}
+			var html = Mustache.render( commandTemplate, { commands: commandsInInteraction } );
+			var tab = { index: interactionsTabs.length, title: interactionName, html: html };
+			interactionsTabs.push( tab );
 		}
+		$("#command_input_byinteraction").html( Mustache.render( bootstrapTabsTemplate, { tabs: interactionsTabs, uniqueName: 'byinteractiontabs' } ) );
+	}
+
+	function fillCommandsForInputBySchema()
+	{
+		var schemasTabs = [];
+		for ( var schemaName in schemas ) {
+			var schemaNameInHebrew = schemasInHebrew[ schemaName ];
+			var schemaOrderTabs = []
+			for ( var i in schemas[ schemaName ] ) {
+				var orderName = schemas[ schemaName ][ i ];
+				var commandsInOrder = [];
+				for ( var commandIndex in commands ) {
+					var command = commands[ commandIndex ];
+					if ( command.schema != schemaName || command.schemaorder != i )
+						continue;
+					commandsInOrder.push( command );
+				}
+				var html = Mustache.render( commandTemplate, { commands: commandsInOrder } );
+				var tab = { index: schemaOrderTabs.length, title: orderName, html: html };
+				schemaOrderTabs.push( tab );
+			}
+			var html = Mustache.render( bootstrapTabsTemplate, { tabs: schemaOrderTabs, uniqueName: 'byschema_' + schemaName + "_tabs" } );
+			var tab = { index: schemasTabs.length, title: schemaNameInHebrew, html: html };
+			schemasTabs.push( tab );
+		}
+		$("#command_input_byschema").html( Mustache.render( bootstrapTabsTemplate, { tabs: schemasTabs, uniqueName: 'byschematabs' } ) );
 	}
 
 	$(function(){
@@ -324,9 +377,10 @@
 		<a id="finishbutton" class="btn btn-warning" href="#">סיימתי, הראה לי מה שכחתי</a>
 	</p>
 	<div id="playground" style="display:none;">
-		<div id="counter"></div>
+		<h4>שעון: <span id="counter"></span> </h4>
 		<table id="history">
 		</table>
+		<h4>בחר פעולה:</h4>
 		<div id="command_input_alphabetic">
 			<select class="command_combobox" id="command_alphabetic_combobox">
 				<option value="" class="emptycommand"></option>
@@ -338,10 +392,8 @@
 			</select>
 		</div>
 		<div id="command_input_byschema">
-			<select class="command_preselect_combobox" id="command_input_byschema_phasecombobox">
-				<option value="" class="emptycommand"></option>
-			</select>
 		</div>
 	</div>
+
 </div>
 {% endblock %}

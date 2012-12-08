@@ -24,6 +24,7 @@
 {% block contents %}
 
 <script type="text/javascript" src="static/js/anamnesis.js"></script>
+<script type="text/javascript" src="static/js/mustache.js"></script>
 <script type="text/javascript">
 <!--
 	function formatString() {
@@ -108,6 +109,14 @@
 		}
 	}
 
+	function reportCase( caseIndex )
+	{
+		clearHTMLBody();
+		var aCase = cases[ caseIndex ];
+		var html = tableHTMLForCase( aCase );
+		$("body").append( html );
+	}
+
 	function reportDefaults()
 	{
 		$("body").html( '<p><a class="btn btn-danger" href="anamnesispool.html">חזור &raquo;</a></p>' );
@@ -135,6 +144,10 @@
 	$(function(){
 		$("#reportAllCases").click( reportAllCases );
 		$("#reportDefaults").click( reportDefaults );
+		for ( var i in cases ) {
+			var aCase = cases[ i ];
+			$("#separateCases").append( '<p><a href="#" onclick="reportCase(' + i + ')">' + aCase.condition + ' (דרגת קושי ' + aCase.difficulty + ')</a></p>' );
+		}
 	});
 -->
 </script>
@@ -143,6 +156,9 @@
 
 <p> <a href="#" id="reportDefaults">פרט את כל הפעולות ותשובות ברירת המחדל (מוכן להדפסה)</a> </p>
 <p> <a href="#" id="reportAllCases">פרט את כל המקרים (מוכן להדפסה)</a> </p>
+<h4>מקרים:</h4>
+<div id="separateCases">
+</div>
 
 </div>
 {% endblock %}

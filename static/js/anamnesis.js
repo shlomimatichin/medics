@@ -194,27 +194,31 @@ var defaultAnswers = {
 var schemas = {
 	'patient': [
 		"Safety",
-		"Airway",
-		"Breath",
-		"Circulation",
-		"Disability",
-		"Treatment and Transport"
+		"<b>A</b>irway",
+		"<b>B</b>reath",
+		"<b>C</b>irculation",
+		"<b>D</b>isability",
+		"<b>T</b>reatment and Transport"
 	],
 	'anamnesis': [
-		"S&amp;S: Provokes",
-		"S&amp;S: Quality",
-		"S&amp;S: Region",
-		"S&amp;S: Radiation",
-		"S&amp;S: Risk Factors",
-		"S&amp;S: Severity",
-		"S&amp;S: Timing",
-		"S&amp;S: Associated Signs and Symptoms",
-		"Allergies",
-		"Medication",
-		"Pertinent Past Medical History",
-		"Last Oral Intake",
-		"Events leading to injury or illness"
+		"S&amp;S: <b>P</b>rovokes",
+		"S&amp;S: <b>Q</b>uality",
+		"S&amp;S: <b>R</b>egion",
+		"S&amp;S: <b>R</b>adiation",
+		"S&amp;S: <b>R</b>isk Factors",
+		"S&amp;S: <b>S</b>everity",
+		"S&amp;S: <b>T</b>iming",
+		"S&amp;S: Associated S&amp;S",
+		"<b>A</b>llergies",
+		"<b>M</b>edication",
+		"<b>P</b>ertinent Past Medical History",
+		"<b>L</b>ast Oral Intake",
+		"<b>E</b>vents leading to injury or illness"
 	]
+};
+var schemasInHebrew = {
+	'patient': 'סכימת טיפול בחולה',
+	'anamnesis': 'סכימת אנמנזה'
 };
 
 var interactions = [
@@ -280,14 +284,14 @@ var commands = [
 	{ 'command': '"הכאת?"', 'key': 10501, 'schema': 'anamnesis', 'schemaorder': 7, 'interaction': 3 },
 	{ 'command': '"אתה מרגיש בחילה?"', 'key': 10502, 'schema': 'anamnesis', 'schemaorder': 7, 'interaction': 3 },
 
-	{ 'command': '"אם יש לך אלרגיות?"', 'key': 10601, 'schema': 'anamnesis', 'schemaorder': 8, 'interaction': 3 },
+	{ 'command': '"האם יש לך אלרגיות?"', 'key': 10601, 'schema': 'anamnesis', 'schemaorder': 8, 'interaction': 3 },
 
 	{ 'command': '"נוטל תרופות על בסיס קבוע?"', 'key': 10701, 'schema': 'anamnesis', 'schemaorder': 9, 'interaction': 3 },
 	{ 'command': '"לקחת את התרופות שלך היום?"', 'key': 10702, 'schema': 'anamnesis', 'schemaorder': 9, 'interaction': 3 },
 
 	{ 'command': '"בריא בדרך כלל?"', 'key': 10801, 'schema': 'anamnesis', 'schemaorder': 10, 'interaction': 3 },
 	{ 'command': '"יש מחלות שאתה סובל מהן?"', 'key': 10802, 'schema': 'anamnesis', 'schemaorder': 10, 'interaction': 3 },
-	{ 'command': '"האם התאשפזת לארחונה?"', 'key': 10803, 'schema': 'anamnesis', 'schemaorder': 10, 'interaction': 3 },
+	{ 'command': '"האם התאשפזת לאחרונה?"', 'key': 10803, 'schema': 'anamnesis', 'schemaorder': 10, 'interaction': 3 },
 	{ 'command': '"אפשר לראות מכתב שחרור?"', 'key': 10804, 'schema': 'anamnesis', 'schemaorder': 10, 'interaction': 3 },
 
 	{ 'command': '"מתי אכלת לאחרונה?"', 'key': 10901, 'schema': 'anamnesis', 'schemaorder': 11, 'interaction': 3 },
