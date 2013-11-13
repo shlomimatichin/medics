@@ -61,11 +61,11 @@
 	function tableHTMLForCase( aCase )
 	{
 		var table = [];
-		table.push( [ 'המקרה', '', '', '', aCase.condition ] );
-		table.push( [ 'מידע מהמוקד', '', '', '', aCase.intro ] );
-		table.push( [ 'טווח גילאים', '', '', '',  aCase.agemin + " - " + aCase.agemax ] );
-		table.push( [ 'פרק', '', '', '', aCase.chapter ] );
-		table.push( [ 'קושי', '', '', '', aCase.difficulty ] );
+		table.push( [ 'המקרה', '', '', '', '', aCase.condition ] );
+		table.push( [ 'מידע מהמוקד', '', '', '', '', aCase.intro ] );
+		table.push( [ 'טווח גילאים', '', '', '', '',  aCase.agemin + " - " + aCase.agemax ] );
+		table.push( [ 'פרק', '', '', '', '', aCase.chapter ] );
+		table.push( [ 'קושי', '', '', '', '', aCase.difficulty ] );
 		for ( var j in commands ) {
 			var command = commands[ j ];
 			var key = command.key;

@@ -111,6 +111,7 @@
 		$("#command_input_byinteraction").hide();
 		$("#startbutton").show();
 		$("#finishbutton").hide();
+        $(".feedback").css( 'display', 'table-cell' );
 		$("#history").append( "<tr><td>המקרה הוא:</td><td>" + currentCase.condition + '</td><td class="feedback"></td></tr>' );
 		for ( var i in commands ) {
 			var command = commands[ i ];
@@ -147,13 +148,26 @@
 			$("#command_input_byinteraction").show();
 	}
 
+    function applyImmidiateFeedbackSettings()
+    {
+        if ( $("#feedback_immidiate").attr("checked")=="checked" ) {
+            showFeedbackImmidiately = true;
+            $(".feedback").css( 'display', 'table-cell' );
+        } else {
+            showFeedbackImmidiately = false;
+            $(".feedback").css( 'display', 'none' );
+        }
+    }
+
 	var currentSchemas;
 	var currentCase;
 	var commandsUntilNow;
+    var showFeedbackImmidiately;
 	function nextCase() {
 		$("#startbutton").hide();
 		$("#finishbutton").show();
 		showCommandInputByMethod();
+        applyImmidiateFeedbackSettings();
 		$("#history").html("");
 		$("#playground").show("fade");
 		if ( $("#order_random").attr("checked")=="checked" )
@@ -202,6 +216,7 @@
 		if ( $("#memory_hidehistory").attr("checked")=="checked" )
 			$(".historyline").hide();
 		$("#history").append( '<tr class="historyline"><td>' + command.command + "</td><td>" + answer.answer + '</td><td class="feedback">' + feedback + "</td></tr>" );
+        applyImmidiateFeedbackSettings();
 	}
 
 	var counterStarted;
@@ -298,6 +313,7 @@
 			commandGiven( parseInt( key ) );
 		} );
 		$(".inputradio").change( showCommandInputByMethod );
+        $(".feedbackradio").change( applyImmidiateFeedbackSettings );
 		$("#command_input_byschema_phasecombobox").change( function() {
 			var key = $(this).val();
 			$(".command_input_byschema_commandcombobox").hide();
@@ -363,9 +379,14 @@
 		</ul>
 		<ul class="nav nav-list">
 			<li class="nav-header">כיצד לבחור את הפעולה:</li>
-			<li><input type="radio" class="inputradio" name="inputradio" id="input_byschema" checked/> לפי סכמה (הכי קל)</li>
-			<li><input type="radio" class="inputradio" name="inputradio" id="input_byinteraction"/> לפי סוג (קשה)</li>
+			<li><input type="radio" class="inputradio" name="inputradio" id="input_byschema"/> לפי סכמה (הכי קל)</li>
+			<li><input type="radio" class="inputradio" name="inputradio" id="input_byinteraction" checked/> לפי סוג (קשה)</li>
 			<li><input type="radio" class="inputradio" name="inputradio" id="input_alphabetic"/> אפלאבתי (לצרכי פיתוח)</li>
+		</ul>
+		<ul class="nav nav-list">
+			<li class="nav-header">פידבק:</li>
+			<li><input type="radio" class="feedbackradio" name="feedbackradio" id="feedback_atend" checked/>הראה בסוף המקרה</li>
+			<li><input type="radio" class="feedbackradio" name="feedbackradio" id="feedback_immidiate"/>הראה מייד</li>
 		</ul>
 	</div>
 </div>
